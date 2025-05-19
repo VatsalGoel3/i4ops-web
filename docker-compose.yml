@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  web:
+    build: .
+    ports:
+      - "80:80"
+      - "8000:8000"  # expose API directly for dev
+    volumes:
+      - ./ansible/inv:/app/ansible/inv  # persist YAML
