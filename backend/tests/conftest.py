@@ -1,5 +1,9 @@
-import os, tempfile, shutil, json, pytest
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+import os, tempfile, shutil, json, pytest
 from app import create_app
 from services import project_store
 
