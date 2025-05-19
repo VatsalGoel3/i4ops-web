@@ -1,0 +1,17 @@
+# Global junk
+.DS_Store
+.env
+*.log
+*.pyc
+__pycache__/
+
+# Python virtual env
+.venv/
+
+# Node build junk
+frontend/node_modules/
+frontend/dist/
+
+# Docker
+Dockerfile
+docker-compose.yml
