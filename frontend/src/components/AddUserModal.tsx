@@ -24,12 +24,12 @@ export default function AddUserModal({
   });
 
   const preview = async (values: any) => {
-    const { data } = await api.post("/diff/users", values);
+    const { data } = await api.post("/diff/users/", values);
     setDiff(data.diff);
   };
 
   const save = async (values: any) => {
-    await api.post("/users", values);
+    await api.post("/users/", values);
     refresh();
     close();
   };

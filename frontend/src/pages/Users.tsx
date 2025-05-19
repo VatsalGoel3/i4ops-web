@@ -13,7 +13,7 @@ export default function Users() {
   const [open, setOpen] = useState(false);
 
   const load = () => {
-    api.get("/users").then((r) => setUsers(r.data));
+    api.get("/users/").then((r) => setUsers(r.data));
   };
 
   useEffect(() => {
