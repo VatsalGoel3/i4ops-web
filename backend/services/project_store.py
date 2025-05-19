@@ -2,7 +2,7 @@ from pathlib import Path
 import os, fcntl, contextlib
 import yaml
 from pydantic import BaseModel, Field, ValidationError
-from typing import List
+from typing import List, Optional
 
 DEFAULT_PATH = Path(__file__).resolve().parents[2] / "ansible/inv/SHARED/group_vars/project-users.yaml"
 YAML_PATH = Path(os.getenv("I4OPS_YAML_PATH", DEFAULT_PATH))
@@ -13,9 +13,15 @@ class UserModel(BaseModel):
     role: str = Field(pattern="^(viewer|editor|admin)$")
     password_hash: str
 
+class ProjectModel(BaseModel):
+    id: str
+    pretty_name: Optional[str] = None
+    shortname: Optional[str] = None
+
 class ProjectUsersModel(BaseModel):
     i4ops_customer: dict
     users: List[UserModel] = []
+    projects: List[ProjectModel] = []
 
 class ProjectStore:
     def __init__(self, path: Path):
