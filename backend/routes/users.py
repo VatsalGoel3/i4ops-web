@@ -1,5 +1,5 @@
-from flask import Blueprint, request, jsonify
-from services.project_store import store
+from flask import Blueprint, request, jsonify, abort
+from services.project_store import store, UserModel
 from utils.security import hash_password
 
 bp = Blueprint("users", __name__)
@@ -11,9 +11,19 @@ def list_users():
 
 @bp.post("/")
 def add_user():
-    payload = request.get_json()
-    payload["password_hash"] = hash_password(payload.pop("password"))
+    payload = request.get_json(force=True, silent=True) or {}
+    # validate & transform
+    try:
+        temp = UserModel(
+            username=payload["username"],
+            email=payload["email"],
+            role=payload.get("role", "viewer"),
+            password_hash=hash_password(payload["password"]),
+        )
+    except Exception as exc:
+        abort(400, str(exc))
+        
     data = store.load()
-    data.users.append(payload)
+    data.users.append(temp)
     store.save(data)
     return {"status": "created"}, 201
