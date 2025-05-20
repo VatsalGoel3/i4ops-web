@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../axios";
-import AddUserModal from "../components/AddUserModal.tsx";
+import DataTable from "../components/DataTable";
+import AddUserModal from "../components/AddUserModal";
+import type { ColumnDef } from "@tanstack/react-table";
 
 interface User {
   username: string;
@@ -9,47 +11,31 @@ interface User {
 }
 
 export default function Users() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [data, setData] = useState<User[]>([]);
   const [open, setOpen] = useState(false);
-
-  const load = () => {
-    api.get("/users/").then((r) => setUsers(r.data));
-  };
+  const load = () => api.get("/users/").then((r) => setData(r.data));
 
   useEffect(() => {
     load();
   }, []);
 
+  const cols: ColumnDef<User>[] = [
+    { header: "Username", accessorKey: "username" },
+    { header: "Email", accessorKey: "email" },
+    { header: "Role", accessorKey: "role" },
+  ];
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4 flex justify-between">
-        Users
-        <button
-          onClick={() => setOpen(true)}
-          className="bg-blue-600 text-white px-3 py-1 rounded"
-        >
-          + Add User
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-semibold">Users</h1>
+        <button className="btn-primary" onClick={() => setOpen(true)}>
+          + Add
         </button>
-      </h1>
-      <table className="min-w-full border">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-2">Username</th>
-            <th className="p-2">Email</th>
-            <th className="p-2">Role</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.username} className="border-t">
-              <td className="p-2">{u.username}</td>
-              <td className="p-2">{u.email}</td>
-              <td className="p-2">{u.role}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
+      </div>
+      <div className="border rounded-xl2 overflow-hidden shadow">
+        <DataTable data={data} columns={cols} />
+      </div>
       <AddUserModal isOpen={open} close={() => setOpen(false)} refresh={load} />
     </div>
   );
