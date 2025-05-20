@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../axios";
-import AddUserModal from "../components/AddUserModal";
+import AddUserModal from "../components/AddUserModal.tsx";
 
 interface User {
   username: string;

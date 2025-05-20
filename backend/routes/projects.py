@@ -3,7 +3,8 @@ from services.project_store import store, ProjectModel
 from utils.yaml_diff import unified_yaml_diff
 from utils.git_commit import commit_yaml
 
-bp = Blueprint("projects", __name__, strict_slashes=False)
+bp = Blueprint("projects", __name__)
+bp.strict_slashes = False;
 
 @bp.get("")
 def list_projects():
