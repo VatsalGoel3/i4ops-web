@@ -11,4 +11,7 @@ users:
   email: vatsal.goel@utah.edu
   role: viewer
   password_hash: $6CJgmfqp.D0M
-projects: []
+projects:
+- id: xaSD
+  pretty_name: dawdawdaw
+  shortname: awdadawdw
