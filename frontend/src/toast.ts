@@ -1,2 +1,2 @@
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "sonner";
 export { toast, Toaster };

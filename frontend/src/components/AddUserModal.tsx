@@ -3,6 +3,8 @@ import { Fragment, useState } from "react";
 import { api } from "../axios";
 import DiffViewer from "./DiffViewer";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import { motion } from "framer-motion";
+import { toast } from "../toast";
 import * as Yup from "yup";
 
 export default function AddUserModal({
@@ -30,13 +32,14 @@ export default function AddUserModal({
 
   const save = async (values: any) => {
     await api.post("/users/", values);
+    toast.success("User created");
     refresh();
     close();
   };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" onClose={close} className="relative z-50">
+      <Dialog as="div" onClose={close} className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-200"
@@ -49,92 +52,75 @@ export default function AddUserModal({
           <div className="fixed inset-0 bg-black/30" />
         </Transition.Child>
 
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-200"
-            enterFrom="opacity-0 scale-90"
-            enterTo="opacity-100 scale-100"
-            leave="ease-in duration-150"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-90"
-          >
-            <Dialog.Panel className="w-full max-w-md rounded bg-white p-6">
-              <Dialog.Title className="text-lg font-medium">
-                Add New User
-              </Dialog.Title>
+        <Transition.Child as={Fragment}>
+        <Dialog.Panel
+          as={motion.div}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-white dark:bg-gray-900 rounded-xl2 p-6 w-full max-w-md shadow-lg"
+        >
+            <Dialog.Title className="text-lg font-medium mb-4">Add New User</Dialog.Title>
 
-              <Formik
-                initialValues={{
-                  username: "",
-                  email: "",
-                  password: "",
-                  role: "viewer",
-                }}
-                validationSchema={Schema}
-                onSubmit={save}
-              >
-                {({ values }) => (
-                  <Form className="space-y-4">
-                    {["username", "email", "password"].map((f) => (
-                      <div key={f}>
-                        <Field
-                          name={f}
-                          placeholder={f}
-                          type={f === "password" ? "password" : "text"}
-                          className="w-full border p-2 rounded"
-                        />
-                        <ErrorMessage
-                          name={f}
-                          component="div"
-                          className="text-red-500 text-sm"
-                        />
-                      </div>
-                    ))}
-                    <div>
-                      <label className="block text-sm mb-1">Role</label>
+            <Formik
+              initialValues={{
+                username: "",
+                email: "",
+                password: "",
+                role: "viewer",
+              }}
+              validationSchema={Schema}
+              onSubmit={save}
+            >
+              {({ values }) => (
+                <Form className="space-y-4">
+                  {["username", "email", "password"].map((f) => (
+                    <div key={f}>
                       <Field
-                        as="select"
-                        name="role"
-                        className="w-full border p-2 rounded"
-                      >
-                        <option value="viewer">viewer</option>
-                        <option value="editor">editor</option>
-                        <option value="admin">admin</option>
-                      </Field>
+                        name={f}
+                        placeholder={f}
+                        type={f === "password" ? "password" : "text"}
+                        className="w-full border p-2 rounded bg-white dark:bg-gray-800"
+                      />
+                      <ErrorMessage name={f} component="div" className="text-red-500 text-sm" />
                     </div>
-
-                    <button
-                      type="button"
-                      className="bg-gray-200 px-3 py-1 rounded"
-                      onClick={() => preview(values)}
+                  ))}
+                  <div>
+                    <label className="block text-sm mb-1">Role</label>
+                    <Field
+                      as="select"
+                      name="role"
+                      className="w-full border p-2 rounded bg-white dark:bg-gray-800"
                     >
-                      Preview Diff
+                      <option value="viewer">viewer</option>
+                      <option value="editor">editor</option>
+                      <option value="admin">admin</option>
+                    </Field>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="bg-gray-200 px-3 py-1 rounded"
+                    onClick={() => preview(values)}
+                  >
+                    Preview Diff
+                  </button>
+
+                  <DiffViewer diff={diff} />
+
+                  <div className="flex justify-end gap-2">
+                    <button type="button" onClick={close} className="border px-3 py-1 rounded">
+                      Cancel
                     </button>
-
-                    <DiffViewer diff={diff} />
-
-                    <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={close}
-                        className="px-3 py-1 rounded border"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="bg-blue-600 text-white px-3 py-1 rounded"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </Form>
-                )}
-              </Formik>
-            </Dialog.Panel>
-          </Transition.Child>
-        </div>
+                    <button type="submit" className="btn-primary">
+                      Save
+                    </button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          </Dialog.Panel>
+        </Transition.Child>
       </Dialog>
     </Transition>
   );
