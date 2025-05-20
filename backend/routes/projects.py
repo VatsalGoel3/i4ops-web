@@ -6,11 +6,11 @@ from utils.git_commit import commit_yaml
 bp = Blueprint("projects", __name__)
 bp.strict_slashes = False;
 
-@bp.get("")
+@bp.get("/")
 def list_projects():
     return jsonify([p.model_dump() for p in store.load().projects])
 
-@bp.post("")
+@bp.post("/")
 def add_project():
     payload = request.get_json(force=True, silent=True) or {}
     try:
