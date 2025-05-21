@@ -8,8 +8,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CLERK_JWT_PUBLIC_KEY: ${{ secrets.CLERK_JWT_PUBLIC_KEY }}
+
     services:
-      postgres:  # placeholder for future db needs
+      postgres:
         image: postgres:16-alpine
         ports: ["5432:5432"]
         env:

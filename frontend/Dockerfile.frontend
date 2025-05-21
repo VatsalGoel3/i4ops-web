@@ -1,9 +1,10 @@
-FROM node:20-slim
+FROM python:3.11-slim
 
 WORKDIR /app
-COPY . .
 
-RUN npm ci && npm run build
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-FROM nginx:1.25-alpine
-COPY --from=0 /app/dist /usr/share/nginx/html
+COPY backend/ .
+
+CMD ["python", "app.py"]
