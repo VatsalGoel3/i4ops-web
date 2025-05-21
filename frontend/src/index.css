@@ -1,5 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -13,6 +17,20 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--background);
+}
+
+/* Global typography adjustments */
+h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -22,40 +40,19 @@ a:hover {
   color: #535bf2;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
+/* Primary CTA buttons */
 .btn-primary {
-  @apply bg-brand text-white px-3 py-1.5 rounded shadow hover:bg-brand-soft transition-colors;
+  @apply inline-flex items-center gap-1 bg-brand hover:bg-brand-soft text-white
+          px-4 py-2 rounded-lg text-sm font-medium shadow focus:outline-none;
+}
+
+/* Header and sidebar z-index for mobile layering */
+header {
+  @apply z-10;
+}
+
+aside {
+  @apply z-20 lg:z-auto;
 }
 
 @media (prefers-color-scheme: light) {

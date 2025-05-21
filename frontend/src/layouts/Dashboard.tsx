@@ -1,9 +1,9 @@
-// src/layouts/Dashboard.tsx
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import Header from "../components/Header";
 import { Users, FolderKanban } from "lucide-react";
 import clsx from "clsx";
+import { motion } from "framer-motion";
 
 const links = [
   { to: "/users", label: "Users", icon: Users },
@@ -16,34 +16,41 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen bg-surface dark:bg-surface-dark text-gray-900 dark:text-gray-100">
       {/* Sidebar */}
-      <aside
-        className={clsx(
-          "bg-white dark:bg-gray-900 shadow-lg lg:shadow-none transition-all",
-          open ? "w-52" : "w-14"
-        )}
+      <motion.aside
+        animate={{ width: open ? 224 : 64 }}
+        transition={{ duration: 0.2 }}
+        className={clsx("bg-gray-900 text-gray-100 transition-all z-20", open ? "w-56" : "w-16")}
       >
-        <div className="py-3" />
-        {links.map((l) => (
-          <NavLink
-            key={l.to}
-            to={l.to}
-            className={({ isActive }) =>
-              clsx(
-                "flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700",
-                isActive && "bg-gray-100 dark:bg-gray-700 font-medium"
-              )
-            }
-          >
-            <l.icon className="h-5 w-5 shrink-0" />
-            <span className={clsx(!open && "hidden lg:block")}>{l.label}</span>
-          </NavLink>
-        ))}
-      </aside>
+        <nav className="grid gap-1 pt-4">
+          {links.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                clsx(
+                  "group flex items-center gap-3 rounded-lg mx-2 px-3 py-2",
+                  isActive ? "bg-gray-800 text-brand" : "hover:bg-gray-800 hover:text-brand-soft"
+                )
+              }
+            >
+              <Icon className="h-5 w-5 shrink-0" />
+              <span className={clsx("truncate", !open && "hidden xl:inline")}>{label}</span>
+              {!open && (
+                <span className="absolute left-full ml-2 rounded bg-gray-800 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none">
+                  {label}
+                </span>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+      </motion.aside>
 
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header onSidebarToggle={() => setOpen(!open)} />
-        <main className="flex-1 overflow-auto">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
