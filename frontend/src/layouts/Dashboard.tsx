@@ -18,8 +18,8 @@ export default function Dashboard() {
       {/* Sidebar */}
       <motion.aside
         animate={{ width: open ? 224 : 64 }}
-        transition={{ duration: 0.2 }}
-        className={clsx("bg-gray-900 text-gray-100 transition-all z-20", open ? "w-56" : "w-16")}
+        transition={{ type: "spring", stiffness: 260, damping: 25 }} // smoother
+        className="bg-gray-900 text-gray-100 z-20 overflow-hidden"
       >
         <nav className="grid gap-1 pt-4">
           {links.map(({ to, label, icon: Icon }) => (
@@ -28,15 +28,20 @@ export default function Dashboard() {
               to={to}
               className={({ isActive }) =>
                 clsx(
-                  "group flex items-center gap-3 rounded-lg mx-2 px-3 py-2",
+                  "group relative flex items-center gap-3 rounded-lg mx-2 px-3 py-2 transition-colors",
                   isActive ? "bg-gray-800 text-brand" : "hover:bg-gray-800 hover:text-brand-soft"
                 )
               }
             >
               <Icon className="h-5 w-5 shrink-0" />
               <span className={clsx("truncate", !open && "hidden xl:inline")}>{label}</span>
+
+              {/* Tooltip when collapsed */}
               {!open && (
-                <span className="absolute left-full ml-2 rounded bg-gray-800 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none">
+                <span
+                  className="absolute left-full ml-2 whitespace-nowrap rounded bg-gray-900 text-white text-xs px-2 py-1 
+                             opacity-0 group-hover:opacity-100 pointer-events-none transition"
+                >
                   {label}
                 </span>
               )}
@@ -45,6 +50,7 @@ export default function Dashboard() {
         </nav>
       </motion.aside>
 
+      {/* Main content */}
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header onSidebarToggle={() => setOpen(!open)} />
         <main className="flex-1 overflow-y-auto">
