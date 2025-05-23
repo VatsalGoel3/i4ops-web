@@ -1,7 +1,6 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import { api } from "../axios";
-import DiffViewer from "./DiffViewer";
 import { Formik, Form, Field } from "formik";
 import { motion } from "framer-motion";
 import { toast } from "../toast";
@@ -15,12 +14,6 @@ export default function AddProjectModal({
   close: () => void;
   refresh: () => void;
 }) {
-  const [diff, setDiff] = useState("");
-
-  const preview = async (v: any) => {
-    const { data } = await api.post("/projects/dry-run", v);
-    setDiff(data.diff);
-  };
 
   const save = async (v: any) => {
     await api.post("/projects/", v);
@@ -64,14 +57,7 @@ export default function AddProjectModal({
                       className="w-full border p-2 rounded bg-white dark:bg-gray-800"
                     />
                   ))}
-                  <button
-                    type="button"
-                    className="bg-gray-200 px-3 py-1 rounded"
-                    onClick={() => preview(values)}
-                  >
-                    Preview Diff
-                  </button>
-                  <DiffViewer diff={diff} />
+                  
                   <div className="flex justify-end gap-2">
                     <button type="button" className="border px-3 py-1 rounded" onClick={close}>
                       Cancel

@@ -1,7 +1,6 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import { api } from "../axios";
-import DiffViewer from "./DiffViewer";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { motion } from "framer-motion";
 import { toast } from "../toast";
@@ -16,7 +15,6 @@ export default function AddUserModal({
   close: () => void;
   refresh: () => void;
 }) {
-  const [diff, setDiff] = useState("");
 
   const Schema = Yup.object().shape({
     username: Yup.string().required(),
@@ -24,11 +22,6 @@ export default function AddUserModal({
     password: Yup.string().min(8).required(),
     role: Yup.string().oneOf(["viewer", "editor", "admin"]).required(),
   });
-
-  const preview = async (values: any) => {
-    const { data } = await api.post("/diff/users/", values);
-    setDiff(data.diff);
-  };
 
   const save = async (values: any) => {
     await api.post("/users/", values);
@@ -97,16 +90,6 @@ export default function AddUserModal({
                       <option value="admin">admin</option>
                     </Field>
                   </div>
-
-                  <button
-                    type="button"
-                    className="bg-gray-200 px-3 py-1 rounded"
-                    onClick={() => preview(values)}
-                  >
-                    Preview Diff
-                  </button>
-
-                  <DiffViewer diff={diff} />
 
                   <div className="flex justify-end gap-2">
                     <button type="button" onClick={close} className="border px-3 py-1 rounded">
