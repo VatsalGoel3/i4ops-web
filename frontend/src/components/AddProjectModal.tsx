@@ -47,7 +47,7 @@ export default function AddProjectModal({
         >
             <Dialog.Title className="text-lg font-medium mb-2">Add Project</Dialog.Title>
             <Formik initialValues={{ id: "", pretty_name: "", shortname: "" }} onSubmit={save}>
-              {({ values }) => (
+              {({ }) => (
                 <Form className="space-y-4">
                   {["id", "pretty_name", "shortname"].map((f) => (
                     <Field
@@ -57,7 +57,7 @@ export default function AddProjectModal({
                       className="w-full border p-2 rounded bg-white dark:bg-gray-800"
                     />
                   ))}
-                  
+
                   <div className="flex justify-end gap-2">
                     <button type="button" className="border px-3 py-1 rounded" onClick={close}>
                       Cancel

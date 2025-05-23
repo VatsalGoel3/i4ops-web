@@ -65,7 +65,7 @@ export default function AddUserModal({
               validationSchema={Schema}
               onSubmit={save}
             >
-              {({ values }) => (
+              {({ }) => (
                 <Form className="space-y-4">
                   {["username", "email", "password"].map((f) => (
                     <div key={f}>
