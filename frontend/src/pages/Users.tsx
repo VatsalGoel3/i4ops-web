@@ -4,12 +4,19 @@ import { api } from "../axios";
 import AddUserModal from "../components/AddUserModal";
 import DataTable from "../components/DataTable";
 import { type ColumnDef } from "@tanstack/react-table";
+import { useRole } from "../hooks/useRole"; // 🆕
 
-interface User { username: string; email: string; role: string; }
+interface User {
+  username: string;
+  email: string;
+  role: string;
+}
 
 export default function Users() {
   const [data, setData] = useState<User[]>([]);
   const [open, setOpen] = useState(false);
+  const role = useRole(); // 🆕
+
   const load = () => api.get("/users/").then((r) => setData(r.data));
   useEffect(() => { load(); }, []);
 
@@ -31,7 +38,9 @@ export default function Users() {
       </motion.h1>
 
       <div className="flex justify-end">
-        <button className="btn-primary" onClick={() => setOpen(true)}>+ Add</button>
+        {role !== "viewer" && ( // 🆕 conditional render
+          <button className="btn-primary" onClick={() => setOpen(true)}>+ Add</button>
+        )}
       </div>
 
       <section className="bg-white dark:bg-gray-900 rounded-xl2 shadow-sm border">

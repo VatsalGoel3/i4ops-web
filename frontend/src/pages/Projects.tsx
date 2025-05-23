@@ -4,6 +4,7 @@ import { api } from "../axios";
 import AddProjectModal from "../components/AddProjectModal";
 import DataTable from "../components/DataTable";
 import { type ColumnDef } from "@tanstack/react-table";
+import { useRole } from "../hooks/useRole"; // 🆕
 
 interface Project {
   id: string;
@@ -14,6 +15,7 @@ interface Project {
 export default function Projects() {
   const [data, setData] = useState<Project[]>([]);
   const [open, setOpen] = useState(false);
+  const role = useRole(); // 🆕
 
   const load = () => api.get("/projects/").then((r) => setData(r.data));
   useEffect(() => { load(); }, []);
@@ -36,7 +38,9 @@ export default function Projects() {
       </motion.h1>
 
       <div className="flex justify-end">
-        <button className="btn-primary" onClick={() => setOpen(true)}>+ Add</button>
+        {role !== "viewer" && ( // 🆕 conditional render
+          <button className="btn-primary" onClick={() => setOpen(true)}>+ Add</button>
+        )}
       </div>
 
       <section className="bg-white dark:bg-gray-900 rounded-xl2 shadow-sm border">
