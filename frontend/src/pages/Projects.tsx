@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "../axios";
 import AddProjectModal from "../components/AddProjectModal";
-import DataTable from "../components/DataTable";
-import { type ColumnDef } from "@tanstack/react-table";
 import { useRole } from "../hooks/useRole";
 import { useAuth } from "@clerk/clerk-react";
-import Skeleton from "../components/ui/Skeleton";         // ✅
-import EmptyState from "../components/ui/EmptyState";     // ✅
+import Skeleton from "../components/ui/Skeleton";
+import EmptyState from "../components/ui/EmptyState";
+import { Table } from "../components/ui/Table";
+import Button from "../components/ui/Button";
 
 interface Project {
   id: string;
@@ -16,7 +16,7 @@ interface Project {
 }
 
 export default function Projects() {
-  const [data, setData] = useState<Project[] | null>(null); // ✅
+  const [data, setData] = useState<Project[] | null>(null);
   const [open, setOpen] = useState(false);
   const role = useRole();
   const { isSignedIn } = useAuth();
@@ -27,14 +27,8 @@ export default function Projects() {
     load();
   }, [isSignedIn]);
 
-  const cols: ColumnDef<Project>[] = [
-    { header: "ID", accessorKey: "id" },
-    { header: "Pretty Name", accessorKey: "pretty_name" },
-    { header: "Shortname", accessorKey: "shortname" },
-  ];
-
-  if (!data) return <Skeleton className="h-48 w-full" />;           // ✅
-  if (data.length === 0) return <EmptyState msg="No projects yet" />; // ✅
+  if (!data) return <Skeleton className="h-48 w-full" />;
+  if (data.length === 0) return <EmptyState msg="No projects yet" />;
 
   return (
     <div className="space-y-6">
@@ -42,20 +36,35 @@ export default function Projects() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="text-2xl font-semibold mb-6"
+        className="text-2xl font-semibold"
       >
         Projects
       </motion.h1>
 
       <div className="flex justify-end">
         {role !== "viewer" && (
-          <button className="btn-primary" onClick={() => setOpen(true)}>+ Add</button>
+          <Button onClick={() => setOpen(true)}>+ Add</Button>
         )}
       </div>
 
-      <section className="bg-white dark:bg-gray-900 rounded-xl2 shadow-sm border">
-        <DataTable data={data} columns={cols} />
-      </section>
+      <Table>
+        <thead className="bg-gray-50 dark:bg-gray-800/50">
+          <tr className="text-left text-xs uppercase tracking-wider">
+            <th className="px-4 py-2">ID</th>
+            <th className="px-4 py-2">Pretty Name</th>
+            <th className="px-4 py-2">Shortname</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((p) => (
+            <tr key={p.id} className="odd:bg-white/5 even:bg-white/0 hover:bg-brand/5">
+              <td className="px-4 py-2">{p.id}</td>
+              <td className="px-4 py-2">{p.pretty_name}</td>
+              <td className="px-4 py-2">{p.shortname}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
 
       <AddProjectModal isOpen={open} close={() => setOpen(false)} refresh={load} />
     </div>

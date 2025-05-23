@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "../axios";
 import AddUserModal from "../components/AddUserModal";
-import DataTable from "../components/DataTable";
-import { type ColumnDef } from "@tanstack/react-table";
 import { useRole } from "../hooks/useRole";
 import { useAuth } from "@clerk/clerk-react";
-import Skeleton from "../components/ui/Skeleton";        // ✅
-import EmptyState from "../components/ui/EmptyState";    // ✅
+import Skeleton from "../components/ui/Skeleton";
+import EmptyState from "../components/ui/EmptyState";
+import { Table } from "../components/ui/Table";
+import Button from "../components/ui/Button";
 
 interface User {
   username: string;
@@ -16,10 +16,10 @@ interface User {
 }
 
 export default function Users() {
-  const [data, setData] = useState<User[] | null>(null); // ✅ start as null
+  const [data, setData] = useState<User[] | null>(null);
   const [open, setOpen] = useState(false);
   const role = useRole();
-  const { isSignedIn } = useAuth(); // ✅
+  const { isSignedIn } = useAuth();
 
   const load = () => api.get("/users/").then((r) => setData(r.data));
   useEffect(() => {
@@ -27,14 +27,8 @@ export default function Users() {
     load();
   }, [isSignedIn]);
 
-  const cols: ColumnDef<User>[] = [
-    { header: "Username", accessorKey: "username" },
-    { header: "Email", accessorKey: "email" },
-    { header: "Role", accessorKey: "role" },
-  ];
-
-  if (!data) return <Skeleton className="h-48 w-full" />;         // ✅ loading
-  if (data.length === 0) return <EmptyState msg="No users yet" />; // ✅ empty
+  if (!data) return <Skeleton className="h-48 w-full" />;
+  if (data.length === 0) return <EmptyState msg="No users yet" />;
 
   return (
     <div className="space-y-6">
@@ -42,20 +36,35 @@ export default function Users() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="text-2xl font-semibold mb-6"
+        className="text-2xl font-semibold"
       >
         Users
       </motion.h1>
 
       <div className="flex justify-end">
         {role !== "viewer" && (
-          <button className="btn-primary" onClick={() => setOpen(true)}>+ Add</button>
+          <Button onClick={() => setOpen(true)}>+ Add</Button>
         )}
       </div>
 
-      <section className="bg-white dark:bg-gray-900 rounded-xl2 shadow-sm border">
-        <DataTable data={data} columns={cols} />
-      </section>
+      <Table>
+        <thead className="bg-gray-50 dark:bg-gray-800/50">
+          <tr className="text-left text-xs uppercase tracking-wider">
+            <th className="px-4 py-2">Username</th>
+            <th className="px-4 py-2">Email</th>
+            <th className="px-4 py-2">Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((u) => (
+            <tr key={u.username} className="odd:bg-white/5 even:bg-white/0 hover:bg-brand/5">
+              <td className="px-4 py-2">{u.username}</td>
+              <td className="px-4 py-2">{u.email}</td>
+              <td className="px-4 py-2 capitalize">{u.role}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
 
       <AddUserModal isOpen={open} close={() => setOpen(false)} refresh={load} />
     </div>
