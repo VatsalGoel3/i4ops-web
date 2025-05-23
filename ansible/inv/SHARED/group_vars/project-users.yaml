@@ -3,15 +3,15 @@ i4ops_customer:
   shortname: i4-proj2
   pretty_name: i4ops Example Project
 users:
-- username: vatsal
+- username: Vatsal
   email: vatsal@example.com
-  role: admin
-  password_hash: $6$abc123456789xyz$5URW7M4lOJxN3BpZ1QAc6sIP.3LqBp0YAG0wWLVVp9EpPl7Z2e0J88J/jfpeAKMiW/5ABzZ1mAo5YQzyR.G9d1
-- username: vatsal.goel@utah.edu
-  email: vatsal.goel@utah.edu
   role: viewer
+  password_hash: $6$abc123456789xyz$5URW7M4lOJxN3BpZ1QAc6sIP.3LqBp0YAG0wWLVVp9EpPl7Z2e0J88J/jfpeAKMiW/5ABzZ1mAo5YQzyR.G9d1
+- username: admin
+  email: admin@demo.com
+  role: admin
   password_hash: $6CJgmfqp.D0M
 projects:
-- id: xaSD
-  pretty_name: dawdawdaw
-  shortname: awdadawdw
+- id: i4ops-web
+  pretty_name: Web Dashboard
+  shortname: test-web-ui
