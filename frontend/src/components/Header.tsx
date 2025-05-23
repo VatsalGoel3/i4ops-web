@@ -11,6 +11,7 @@ export default function Header({ onSidebarToggle }: { onSidebarToggle: () => voi
 
       <h1 className="text-lg font-display font-semibold tracking-wide hidden sm:block">i4ops Console</h1>
 
+      { 
       <div className="relative flex-1 max-w-xs">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
         <input
@@ -19,12 +20,16 @@ export default function Header({ onSidebarToggle }: { onSidebarToggle: () => voi
           className="w-full pl-9 pr-3 py-1.5 rounded bg-gray-100 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-900 focus:outline-none"
         />
       </div>
+      }
 
       <ThemeToggle />
-      <button className="relative p-2 hover:text-brand">
+
+      {/* 🔕 Disabled bell icon — will enable when backend is ready */}
+      <button className="p-2 text-gray-400 cursor-default" disabled>
         <Bell className="h-5 w-5" />
         <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-red-500" />
       </button>
+
       <UserButton afterSignOutUrl="/" />
     </header>
   );
