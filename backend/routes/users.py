@@ -30,7 +30,6 @@ def add_user():
     data.users.append(temp)
     store.save(data)
 
-    # ✅ Audit log entry
     record(
         actor=g.sub,
         resource="user",

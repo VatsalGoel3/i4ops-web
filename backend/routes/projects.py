@@ -75,7 +75,6 @@ def delete_project(pid):
     store.save(data)
     commit_yaml(f"chore(project): delete {pid}")
 
-    # ✅ Audit log entry
     record(
         actor=g.sub,
         resource="project",
