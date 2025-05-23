@@ -1,9 +1,11 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { api } from "../axios";
-import { Formik, Form, Field } from "formik";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import { motion } from "framer-motion";
 import { toast } from "../toast";
+import * as Yup from "yup";
+import Button from "../components/ui/Button";
 
 export default function AddProjectModal({
   isOpen,
@@ -14,12 +16,27 @@ export default function AddProjectModal({
   close: () => void;
   refresh: () => void;
 }) {
+  const [isLoading, setIsLoading] = useState(false);
 
-  const save = async (v: any) => {
-    await api.post("/projects/", v);
-    toast.success("Project created");
-    refresh();
-    close();
+  const Schema = Yup.object().shape({
+    id: Yup.string().required("ID is required"),
+    pretty_name: Yup.string().required("Pretty Name is required"),
+    shortname: Yup.string().required("Shortname is required"),
+  });
+
+  const save = async (values: any) => {
+    setIsLoading(true);
+    try {
+      await api.post("/projects/", values);
+      toast.success("Project created");
+      refresh();
+      close();
+    } catch (error: any) {
+      console.error("Failed to create project:", error);
+      toast.error(error.response?.data?.detail || "Failed to create project");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -43,28 +60,34 @@ export default function AddProjectModal({
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-white dark:bg-gray-900 rounded-xl2 p-6 w-full max-w-md shadow-lg"
+          className="bg-white dark:bg-gray-900 rounded-xl2 p-6 w-full max-w-md shadow-lg relative z-50"
         >
             <Dialog.Title className="text-lg font-medium mb-2">Add Project</Dialog.Title>
-            <Formik initialValues={{ id: "", pretty_name: "", shortname: "" }} onSubmit={save}>
+            <Formik initialValues={{ id: "", pretty_name: "", shortname: "" }} validationSchema={Schema} onSubmit={save}>
               {({ }) => (
                 <Form className="space-y-4">
                   {["id", "pretty_name", "shortname"].map((f) => (
-                    <Field
-                      key={f}
-                      name={f}
-                      placeholder={f}
-                      className="w-full border p-2 rounded bg-white dark:bg-gray-800"
-                    />
+                    <div key={f}>
+                      <label htmlFor={f} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 capitalize">
+                        {f.replace('_', ' ')}
+                      </label>
+                      <Field
+                        id={f}
+                        name={f}
+                        placeholder={`Enter ${f.replace('_', ' ')}`}
+                        className="w-full border p-2 rounded bg-white dark:bg-gray-800"
+                      />
+                      <ErrorMessage name={f} component="div" className="text-red-500 text-sm mt-1" />
+                    </div>
                   ))}
 
                   <div className="flex justify-end gap-2">
-                    <button type="button" className="border px-3 py-1 rounded" onClick={close}>
+                    <button type="button" className="border px-3 py-1 rounded dark:border-gray-700 dark:text-gray-300" onClick={close}>
                       Cancel
                     </button>
-                    <button type="submit" className="btn-primary">
+                    <Button type="submit" isLoading={isLoading}>
                       Save
-                    </button>
+                    </Button>
                   </div>
                 </Form>
               )}

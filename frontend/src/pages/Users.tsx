@@ -8,6 +8,7 @@ import Skeleton from "../components/ui/Skeleton";
 import EmptyState from "../components/ui/EmptyState";
 import { Table } from "../components/ui/Table";
 import Button from "../components/ui/Button";
+import { toast } from "../toast";
 
 interface User {
   username: string;
@@ -18,17 +19,64 @@ interface User {
 export default function Users() {
   const [data, setData] = useState<User[] | null>(null);
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const role = useRole();
   const { isSignedIn } = useAuth();
 
-  const load = () => api.get("/users/").then((r) => setData(r.data));
+  const load = () => {
+    setIsLoading(true);
+    api.get("/users/")
+      .then((r) => setData(r.data))
+      .catch((error) => {
+        console.error("Failed to fetch users:", error);
+        toast.error("Failed to load users.");
+        setData([]);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }
+
   useEffect(() => {
     if (!isSignedIn) return;
     load();
   }, [isSignedIn]);
 
-  if (!data) return <Skeleton className="h-48 w-full" />;
-  if (data.length === 0) return <EmptyState msg="No users yet" />;
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="flex justify-end"><Skeleton className="h-10 w-24" /></div>
+        <Table>
+          <thead>
+            <tr>
+              <th className="px-4 py-2"><Skeleton className="h-4 w-20" /></th>
+              <th className="px-4 py-2"><Skeleton className="h-4 w-32" /></th>
+              <th className="px-4 py-2"><Skeleton className="h-4 w-24" /></th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: 5 }).map((_, index) => (
+              <tr key={index}>
+                <td className="px-4 py-2"><Skeleton className="h-4 w-24" /></td>
+                <td className="px-4 py-2"><Skeleton className="h-4 w-32" /></td>
+                <td className="px-4 py-2"><Skeleton className="h-4 w-24" /></td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </div>
+    );
+  }
+
+  if (data && data.length === 0) {
+    return (
+      <EmptyState
+        msg="No users yet"
+        action={role !== "viewer" ? <Button onClick={() => setOpen(true)}>+ Add User</Button> : undefined}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -56,7 +104,7 @@ export default function Users() {
           </tr>
         </thead>
         <tbody>
-          {data.map((u) => (
+          {data?.map((u) => (
             <tr key={u.username} className="odd:bg-white/5 even:bg-white/0 hover:bg-brand/5">
               <td className="px-4 py-2">{u.username}</td>
               <td className="px-4 py-2">{u.email}</td>
