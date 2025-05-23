@@ -55,6 +55,24 @@ aside {
   @apply z-20 lg:z-auto;
 }
 
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1 {
+    @apply text-2xl font-semibold tracking-tight mb-4;
+  }
+
+  h2 {
+    @apply text-xl font-semibold tracking-tight mb-3;
+  }
+
+  label {
+    @apply text-sm font-medium;
+  }
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
