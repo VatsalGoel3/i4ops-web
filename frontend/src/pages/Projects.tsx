@@ -5,7 +5,9 @@ import AddProjectModal from "../components/AddProjectModal";
 import DataTable from "../components/DataTable";
 import { type ColumnDef } from "@tanstack/react-table";
 import { useRole } from "../hooks/useRole";
-import { useAuth } from "@clerk/clerk-react"; // 🆕
+import { useAuth } from "@clerk/clerk-react";
+import Skeleton from "../components/ui/Skeleton";         // ✅
+import EmptyState from "../components/ui/EmptyState";     // ✅
 
 interface Project {
   id: string;
@@ -14,22 +16,25 @@ interface Project {
 }
 
 export default function Projects() {
-  const [data, setData] = useState<Project[]>([]);
+  const [data, setData] = useState<Project[] | null>(null); // ✅
   const [open, setOpen] = useState(false);
   const role = useRole();
-  const { isLoaded } = useAuth(); // 🆕
+  const { isSignedIn } = useAuth();
 
   const load = () => api.get("/projects/").then((r) => setData(r.data));
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isSignedIn) return;
     load();
-  }, [isLoaded]);
+  }, [isSignedIn]);
 
   const cols: ColumnDef<Project>[] = [
     { header: "ID", accessorKey: "id" },
     { header: "Pretty Name", accessorKey: "pretty_name" },
     { header: "Shortname", accessorKey: "shortname" },
   ];
+
+  if (!data) return <Skeleton className="h-48 w-full" />;           // ✅
+  if (data.length === 0) return <EmptyState msg="No projects yet" />; // ✅
 
   return (
     <div className="space-y-6">

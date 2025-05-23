@@ -5,7 +5,9 @@ import AddUserModal from "../components/AddUserModal";
 import DataTable from "../components/DataTable";
 import { type ColumnDef } from "@tanstack/react-table";
 import { useRole } from "../hooks/useRole";
-import { useAuth } from "@clerk/clerk-react"; // 🆕
+import { useAuth } from "@clerk/clerk-react";
+import Skeleton from "../components/ui/Skeleton";        // ✅
+import EmptyState from "../components/ui/EmptyState";    // ✅
 
 interface User {
   username: string;
@@ -14,22 +16,25 @@ interface User {
 }
 
 export default function Users() {
-  const [data, setData] = useState<User[]>([]);
+  const [data, setData] = useState<User[] | null>(null); // ✅ start as null
   const [open, setOpen] = useState(false);
-  const role = useRole(); // 🆕
-  const { isLoaded } = useAuth(); // 🆕
+  const role = useRole();
+  const { isSignedIn } = useAuth(); // ✅
 
   const load = () => api.get("/users/").then((r) => setData(r.data));
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isSignedIn) return;
     load();
-  }, [isLoaded]);
+  }, [isSignedIn]);
 
   const cols: ColumnDef<User>[] = [
     { header: "Username", accessorKey: "username" },
     { header: "Email", accessorKey: "email" },
     { header: "Role", accessorKey: "role" },
   ];
+
+  if (!data) return <Skeleton className="h-48 w-full" />;         // ✅ loading
+  if (data.length === 0) return <EmptyState msg="No users yet" />; // ✅ empty
 
   return (
     <div className="space-y-6">
