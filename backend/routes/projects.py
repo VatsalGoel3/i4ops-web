@@ -2,15 +2,18 @@ from flask import Blueprint, request, jsonify, abort
 from services.project_store import store, ProjectModel
 from utils.yaml_diff import unified_yaml_diff
 from utils.git_commit import commit_yaml
+from utils.auth import require_role
 
 bp = Blueprint("projects", __name__)
 bp.strict_slashes = False;
 
 @bp.get("/")
+@require_role("admin", "viewer", "editor")
 def list_projects():
     return jsonify([p.model_dump() for p in store.load().projects])
 
 @bp.post("/")
+@require_role("admin", "editor")
 def add_project():
     payload = request.get_json(force=True, silent=True) or {}
     try:
@@ -25,6 +28,7 @@ def add_project():
     return {"status": "created"}, 201
 
 @bp.patch("/<pid>")
+@require_role("admin", "editor")
 def update_project(pid):
     payload = request.get_json(force=True, silent=True) or {}
     data = store.load()
@@ -38,6 +42,7 @@ def update_project(pid):
     return {}, 204
 
 @bp.delete("/<pid>")
+@require_role("admin", "editor")
 def delete_project(pid):
     data = store.load()
     data.projects = [p for p in data.projects if p.id != pid]
