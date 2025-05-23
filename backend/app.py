@@ -1,9 +1,15 @@
 from flask import Flask
 from flask_cors import CORS
+from utils.auth import parse_token
 
 def create_app() -> Flask:
     app = Flask(__name__)
     CORS(app, origins=["http://localhost:5173"])
+
+    @app.before_request
+    def auth_middleware():
+        if request.path.startswith("/api/"):
+            parse_token()
 
     # blueprint registration deferred to keep file short
     from routes.users import bp as users_bp
