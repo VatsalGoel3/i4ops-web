@@ -13,9 +13,9 @@ def parse_token():
     try:
         payload = jwt.decode(token, PUBLIC_KEY, algorithms=[ALG])
     except Exception as e:
+        print("JWT decode failure:", e)
         abort(401, f"JWT invalid: {e}")
 
-    # 🧠 Final universal casing patch
     role = payload.get("publicMetadata", {}).get("role") \
         or payload.get("public_metadata", {}).get("role") \
         or "viewer"

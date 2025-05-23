@@ -4,7 +4,8 @@ import { api } from "../axios";
 import AddProjectModal from "../components/AddProjectModal";
 import DataTable from "../components/DataTable";
 import { type ColumnDef } from "@tanstack/react-table";
-import { useRole } from "../hooks/useRole"; // 🆕
+import { useRole } from "../hooks/useRole";
+import { useAuth } from "@clerk/clerk-react"; // 🆕
 
 interface Project {
   id: string;
@@ -15,10 +16,14 @@ interface Project {
 export default function Projects() {
   const [data, setData] = useState<Project[]>([]);
   const [open, setOpen] = useState(false);
-  const role = useRole(); // 🆕
+  const role = useRole();
+  const { isLoaded } = useAuth(); // 🆕
 
   const load = () => api.get("/projects/").then((r) => setData(r.data));
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (!isLoaded) return;
+    load();
+  }, [isLoaded]);
 
   const cols: ColumnDef<Project>[] = [
     { header: "ID", accessorKey: "id" },
@@ -38,7 +43,7 @@ export default function Projects() {
       </motion.h1>
 
       <div className="flex justify-end">
-        {role !== "viewer" && ( // 🆕 conditional render
+        {role !== "viewer" && (
           <button className="btn-primary" onClick={() => setOpen(true)}>+ Add</button>
         )}
       </div>

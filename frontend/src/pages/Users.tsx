@@ -4,7 +4,8 @@ import { api } from "../axios";
 import AddUserModal from "../components/AddUserModal";
 import DataTable from "../components/DataTable";
 import { type ColumnDef } from "@tanstack/react-table";
-import { useRole } from "../hooks/useRole"; // 🆕
+import { useRole } from "../hooks/useRole";
+import { useAuth } from "@clerk/clerk-react"; // 🆕
 
 interface User {
   username: string;
@@ -16,9 +17,13 @@ export default function Users() {
   const [data, setData] = useState<User[]>([]);
   const [open, setOpen] = useState(false);
   const role = useRole(); // 🆕
+  const { isLoaded } = useAuth(); // 🆕
 
   const load = () => api.get("/users/").then((r) => setData(r.data));
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (!isLoaded) return;
+    load();
+  }, [isLoaded]);
 
   const cols: ColumnDef<User>[] = [
     { header: "Username", accessorKey: "username" },
@@ -38,7 +43,7 @@ export default function Users() {
       </motion.h1>
 
       <div className="flex justify-end">
-        {role !== "viewer" && ( // 🆕 conditional render
+        {role !== "viewer" && (
           <button className="btn-primary" onClick={() => setOpen(true)}>+ Add</button>
         )}
       </div>

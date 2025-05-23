@@ -1,18 +1,30 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, request
 from flask_cors import CORS
 from utils.auth import parse_token
 from prometheus_client import Counter, Histogram, generate_latest
 
-# Prometheus metrics
 REQ_LAT = Histogram("http_latency_seconds", "API latency", ["endpoint"])
 REQ_CNT = Counter("http_requests_total", "API hits", ["endpoint", "status"])
 
 def create_app() -> Flask:
     app = Flask(__name__)
-    CORS(app, origins=["http://localhost:5173"])
+
+    CORS(
+        app,
+        origins=["http://localhost:5173"],
+        supports_credentials=True,
+        allow_headers=["Authorization", "Content-Type"],
+        methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    )
 
     @app.before_request
     def auth_middleware():
+        if request.method == "OPTIONS":
+            return
+
         if request.path.startswith("/api/"):
             parse_token()
 
@@ -34,7 +46,7 @@ def create_app() -> Flask:
     app.register_blueprint(users_bp, url_prefix="/api/users")
     app.register_blueprint(projects_bp, url_prefix="/api/projects")
     app.register_blueprint(diff_bp, url_prefix="/api/diff")
-    
+
     return app
 
 if __name__ == "__main__":

@@ -2,18 +2,25 @@ import axios from "axios";
 
 export const api = axios.create({ baseURL: "http://localhost:8000/api" });
 
-/**
- * Attach Clerk session token if the user is signed-in.
- * We grab it from the global `window.Clerk` instance because this file
- * lives outside React and can’t use the `useAuth()` hook.
- */
-api.interceptors.request.use(async (cfg) => {
-  // Cast to `any` to keep the TS compiler happy.
+api.interceptors.request.use(async cfg => {
   const clerk: any = (window as any).Clerk;
 
-  if (clerk?.session) {
-    const token = await clerk.session.getToken();
-    if (token) cfg.headers.Authorization = `Bearer ${token}`;
+  const token =
+    clerk?.session
+      ? await clerk.session.getToken()
+      : await new Promise<string | null>(resolve => {
+          let waited = 0;
+          const id = setInterval(async () => {
+            if (clerk?.session) {
+              clearInterval(id);
+              resolve(await clerk.session.getToken());
+            }
+            if ((waited += 100) >= 1000) resolve(null);
+          }, 100);
+        });
+
+  if (token) {
+    cfg.headers.Authorization = `Bearer ${token}`;
   }
 
   return cfg;
