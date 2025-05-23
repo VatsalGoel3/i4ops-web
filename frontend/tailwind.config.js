@@ -6,22 +6,26 @@ export default {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#2563eb",      // primary blue
+          DEFAULT: "#4F46E5",
           foreground: "#ffffff",
-          soft: "#1e40af",
+          soft: "#6366F1",
         },
         surface: {
-          DEFAULT: "#f9fafb",
-          dark: "#111827",
+          DEFAULT: "#F9FAFB",
+          dark: "#1F2937",
         },
       },
       fontFamily: {
         sans: ["Inter", "sans-serif"],
+        display: ["Inter", "ui-sans-serif"],
       },
       borderRadius: {
-        xl2: "1.25rem",
+        xl2: "12px",
+      },
+      boxShadow: {
+        soft: "0 4px 12px rgba(0,0,0,0.08)",
       },
     },
   },
-  plugins: [require("@tailwindcss/typography")],
+  plugins: [require("@tailwindcss/typography"), require("@tailwindcss/forms")],
 };
