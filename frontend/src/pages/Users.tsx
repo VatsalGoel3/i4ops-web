@@ -9,6 +9,8 @@ import EmptyState from "../components/ui/EmptyState";
 import { Table } from "../components/ui/Table";
 import Button from "../components/ui/Button";
 import { toast } from "../toast";
+import ConfirmDialog from "../components/ConfirmDialog";
+import { Trash2 } from "lucide-react";
 
 interface User {
   username: string;
@@ -20,6 +22,7 @@ export default function Users() {
   const [data, setData] = useState<User[] | null>(null);
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [toDelete, setToDelete] = useState<string | null>(null);
   const role = useRole();
   const { isSignedIn } = useAuth();
 
@@ -35,7 +38,7 @@ export default function Users() {
       .finally(() => {
         setIsLoading(false);
       });
-  }
+  };
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -101,6 +104,7 @@ export default function Users() {
             <th className="px-4 py-2">Username</th>
             <th className="px-4 py-2">Email</th>
             <th className="px-4 py-2">Role</th>
+            {role === "admin" && <th className="px-4 py-2 text-right w-12" />}
           </tr>
         </thead>
         <tbody>
@@ -109,12 +113,41 @@ export default function Users() {
               <td className="px-4 py-2">{u.username}</td>
               <td className="px-4 py-2">{u.email}</td>
               <td className="px-4 py-2 capitalize">{u.role}</td>
+              {role === "admin" && (
+                <td className="px-4 py-2 text-right">
+                  <button
+                    onClick={() => setToDelete(u.username)}
+                    className="p-1.5 text-red-500 hover:text-red-600 focus-visible:ring rounded"
+                    aria-label={`Delete ${u.username}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
       </Table>
 
       <AddUserModal isOpen={open} close={() => setOpen(false)} refresh={load} />
+
+      <ConfirmDialog
+        open={!!toDelete}
+        title="Delete user?"
+        message={`Are you sure you want to remove “${toDelete}”? This cannot be undone.`}
+        onCancel={() => setToDelete(null)}
+        onConfirm={async () => {
+          try {
+            await api.delete(`/users/${toDelete}`);
+            toast.success("User deleted");
+            load();
+          } catch (e) {
+            toast.error("Failed to delete user");
+          } finally {
+            setToDelete(null);
+          }
+        }}
+      />
     </div>
   );
 }
