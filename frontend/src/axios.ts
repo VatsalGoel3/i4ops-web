@@ -7,7 +7,7 @@ api.interceptors.request.use(async cfg => {
 
   const token =
     clerk?.session
-      ? await clerk.session.getToken()
+      ? await clerk.session.getToken({ template: "Test"})
       : await new Promise<string | null>(resolve => {
           let waited = 0;
           const id = setInterval(async () => {
