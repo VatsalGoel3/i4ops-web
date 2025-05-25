@@ -38,3 +38,22 @@ def add_user():
     )
 
     return {"status": "created"}, 201
+
+@bp.delete("/<string:username>")
+@require_role("admin")
+def delete_user(username):
+    data = store.load()
+    i = next((idx for idx, u in enumerate(data.users) if u.username == username), None)
+    if i is None:
+        abort(404, "user not found")
+
+    removed = data.users.pop(i)
+    store.save(data)
+
+    record(
+        actor=g.sub,
+        resource="user",
+        action="delete",
+        diff=f"Deleted user: {removed.username}"
+    )
+    return ("", 204)
