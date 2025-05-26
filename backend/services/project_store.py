@@ -12,6 +12,7 @@ class UserModel(BaseModel):
     email: str
     role: str = Field(pattern="^(viewer|editor|admin)$")
     password_hash: str
+    active: bool = True
 
 class ProjectModel(BaseModel):
     id: str
