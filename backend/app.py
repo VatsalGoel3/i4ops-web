@@ -17,7 +17,7 @@ def create_app() -> Flask:
         origins=["http://localhost:5173"],
         supports_credentials=True,
         allow_headers=["Authorization", "Content-Type"],
-        methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     )
 
     @app.before_request

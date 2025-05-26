@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "../axios";
-import AddUserModal from "../components/AddUserModal";
+import AddUserModal from "../components/UserModal";
 import { useRole } from "../hooks/useRole";
 import { useAuth } from "@clerk/clerk-react";
 import Skeleton from "../components/ui/Skeleton";
@@ -23,6 +23,7 @@ export default function Users() {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [toDelete, setToDelete] = useState<string | null>(null);
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const role = useRole();
   const { isSignedIn } = useAuth();
 
@@ -44,6 +45,21 @@ export default function Users() {
     if (!isSignedIn) return;
     load();
   }, [isSignedIn]);
+
+  const handleAddUser = () => {
+    setUserToEdit(null);
+    setOpen(true);
+  };
+
+  const handleEditUser = (user: User) => {
+    setUserToEdit(user);
+    setOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpen(false);
+    setUserToEdit(null);
+  };
 
   if (isLoading) {
     return (
@@ -76,7 +92,7 @@ export default function Users() {
     return (
       <EmptyState
         msg="No users yet"
-        action={role !== "viewer" ? <Button onClick={() => setOpen(true)}>+ Add User</Button> : undefined}
+        action={role !== "viewer" ? <Button onClick={handleAddUser}>+ Add User</Button> : undefined}
       />
     );
   }
@@ -94,7 +110,7 @@ export default function Users() {
 
       <div className="flex justify-end">
         {role !== "viewer" && (
-          <Button onClick={() => setOpen(true)}>+ Add</Button>
+          <Button onClick={handleAddUser}>+ Add</Button>
         )}
       </div>
 
@@ -113,14 +129,23 @@ export default function Users() {
               <td className="px-4 py-2">{u.username}</td>
               <td className="px-4 py-2">{u.email}</td>
               <td className="px-4 py-2 capitalize">{u.role}</td>
-              {role === "admin" && (
-                <td className="px-4 py-2 text-right">
+              {role !== "viewer" && (
+                <td className="px-4 py-2 text-right flex justify-end space-x-2">
+                  {role === "admin" && (
+                    <button
+                      onClick={() => setToDelete(u.username)}
+                      className="p-1.5 text-red-500 hover:text-red-600 focus-visible:ring rounded"
+                      aria-label={`Delete ${u.username}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                   <button
-                    onClick={() => setToDelete(u.username)}
-                    className="p-1.5 text-red-500 hover:text-red-600 focus-visible:ring rounded"
-                    aria-label={`Delete ${u.username}`}
+                    onClick={() => handleEditUser(u)}
+                    className="p-1.5 text-brand-soft hover:text-brand focus-visible:ring rounded"
+                    aria-label={`Edit ${u.username}`}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    ✏️
                   </button>
                 </td>
               )}
@@ -129,7 +154,7 @@ export default function Users() {
         </tbody>
       </Table>
 
-      <AddUserModal isOpen={open} close={() => setOpen(false)} refresh={load} />
+      <AddUserModal isOpen={open} close={handleCloseModal} refresh={load} userToEdit={userToEdit} />
 
       <ConfirmDialog
         open={!!toDelete}

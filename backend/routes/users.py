@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, abort, g
 from services.project_store import store, UserModel
 from utils.security import hash_password
 from utils.auth import require_role
-from services.audit import record  # ✅ new import
+from services.audit import record
 
 bp = Blueprint("users", __name__)
 
@@ -57,3 +57,39 @@ def delete_user(username):
         diff=f"Deleted user: {removed.username}"
     )
     return ("", 204)
+
+@bp.put("/<string:username>")
+@require_role("admin", "editor")
+def update_user(username):
+    payload = request.get_json(force=True, silent=True) or {}
+    data = store.load()
+
+    i = next((idx for idx, u in enumerate(data.users) if u.username == username), None)
+    if i is None:
+        abort(404, "user not found")
+
+    user_to_update = data.users[i]
+    old_user_data = user_to_update.model_dump(exclude={"password_hash"})
+
+    if "email" in payload:
+        user_to_update.email = payload["email"]
+    if "role" in payload:
+        if payload["role"] not in ["viewer", "editor", "admin"]:
+            abort(400, "Invalid role provided")
+        user_to_update.role = payload["role"]
+    if "password" in payload and payload["password"]:
+        user_to_update.password_hash = hash_password(payload["password"])
+
+    store.save(data)
+
+    new_user_data = user_to_update.model_dump(exclude={"password_hash"})
+    diff = f"Updated user: {username}. Old: {old_user_data}, New: {new_user_data}"
+
+    record(
+        actor=g.sub,
+        resource="user",
+        action="update",
+        diff=diff
+    )
+
+    return {"status": "updated"}, 200
