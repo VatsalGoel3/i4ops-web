@@ -14,35 +14,40 @@ export default function UserModal({
   isOpen,
   close,
   refresh,
-  userToEdit,
+  initial,
   mode = "create",
 }: {
   isOpen: boolean;
   close: () => void;
   refresh: () => void;
-  userToEdit?: User | null;
+  initial?: User | null;
   mode?: "create" | "edit";
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    console.log("UserModal opened. Mode:", mode, "User:", userToEdit);
-  }, [isOpen, mode, userToEdit]);
+    console.log("UserModal opened. Mode:", mode, "User:", initial);
+  }, [isOpen, mode, initial]);
 
   const Schema = Yup.object().shape({
     username: Yup.string().required("Username is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
-    password: mode === "edit" ? Yup.string() : Yup.string().min(8, "Min 8 characters").required("Required"),
-    role: Yup.string().oneOf(["viewer", "editor", "admin"]).required("Role is required"),
+    password:
+      mode === "edit"
+        ? Yup.string()
+        : Yup.string().min(8, "Min 8 characters").required("Required"),
+    role: Yup.string()
+      .oneOf(["viewer", "editor", "admin"])
+      .required("Role is required"),
     active: Yup.boolean(),
   });
 
   const save = async (values: any) => {
     setIsLoading(true);
     try {
-      if (mode === "edit" && userToEdit) {
-        await api.put(`/users/${userToEdit.username}`, values);
+      if (mode === "edit" && initial) {
+        await api.patch(`/users/${initial.username}`, values);
         toast.success("User updated");
       } else {
         await api.post("/users/", values);
@@ -86,22 +91,22 @@ export default function UserModal({
             className="bg-white dark:bg-gray-900 rounded-xl2 p-6 w-full max-w-md shadow-lg relative z-50"
           >
             <Dialog.Title className="text-lg font-medium mb-4">
-              {mode === "edit" && userToEdit ? `Edit “${userToEdit.username}”` : "Add New User"}
+              {mode === "edit" && initial ? `Edit “${initial.username}”` : "Add New User"}
             </Dialog.Title>
 
             <Formik
               initialValues={{
-                username: userToEdit?.username || "",
-                email: userToEdit?.email || "",
+                username: initial?.username || "",
+                email: initial?.email || "",
                 password: "",
-                role: userToEdit?.role || "viewer",
-                active: userToEdit?.active ?? true,
+                role: initial?.role || "viewer",
+                active: initial?.active ?? true,
               }}
+              enableReinitialize
               validationSchema={Schema}
               onSubmit={save}
-              enableReinitialize
             >
-              {({ }) => (
+              {() => (
                 <Form className="space-y-4">
                   {["username", "email", "password"].map((f) => (
                     <div key={f}>

@@ -5,12 +5,10 @@ import UserModal from "../components/UserModal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useRole } from "../hooks/useRole";
 import { useAuth } from "@clerk/clerk-react";
-//import Skeleton from "../components/ui/Skeleton";
-//import EmptyState from "../components/ui/EmptyState";
 import { Table } from "../components/ui/Table";
 import Button from "../components/ui/Button";
 import { toast } from "../toast";
-import { Check, Slash, Pencil } from "lucide-react";
+import { Check, Slash, Pencil, Trash2 } from "lucide-react";
 import type { User } from "../types";
 
 export default function Users() {
@@ -18,6 +16,7 @@ export default function Users() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [toggleUser, setToggleUser] = useState<User | null>(null);
+  const [deleteUser, setDeleteUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const role = useRole();
@@ -98,6 +97,13 @@ export default function Users() {
                     title={u.active ? "Disable" : "Enable"}
                     onClick={() => setToggleUser(u)}
                   />
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    icon={Trash2}
+                    title="Delete"
+                    onClick={() => setDeleteUser(u)}
+                  />
                 </td>
               )}
             </tr>
@@ -105,6 +111,7 @@ export default function Users() {
         </tbody>
       </Table>
 
+      {/* Create */}
       <UserModal
         mode="create"
         isOpen={createOpen}
@@ -112,16 +119,18 @@ export default function Users() {
         refresh={load}
       />
 
+      {/* Edit */}
       {editUser && (
         <UserModal
           mode="edit"
-          initial={editUser}
           isOpen={!!editUser}
+          initial={editUser}
           close={() => setEditUser(null)}
           refresh={load}
         />
       )}
 
+      {/* Toggle */}
       {toggleUser && (
         <ConfirmDialog
           open={!!toggleUser}
@@ -143,6 +152,27 @@ export default function Users() {
               load();
             } catch {
               toast.error("Failed to update user");
+            }
+          }}
+        />
+      )}
+
+      {/* Delete */}
+      {deleteUser && (
+        <ConfirmDialog
+          open={!!deleteUser}
+          title={`Delete “${deleteUser.username}”‽`}
+          message="The user entry will be removed from project-users.yaml. This action is irreversible."
+          confirmLabel="Delete"
+          onCancel={() => setDeleteUser(null)}
+          onConfirm={async () => {
+            try {
+              await api.delete(`/users/${deleteUser.username}`);
+              toast.success(`${deleteUser.username} deleted`);
+              setDeleteUser(null);
+              load();
+            } catch {
+              toast.error("Failed to delete user");
             }
           }}
         />
