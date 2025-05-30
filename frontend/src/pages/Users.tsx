@@ -17,7 +17,7 @@ export default function Users() {
   const [editUser, setEditUser] = useState<User | null>(null);
   const [toggleUser, setToggleUser] = useState<User | null>(null);
   const [deleteUser, setDeleteUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
 
   const role = useRole();
   const { isSignedIn } = useAuth();
