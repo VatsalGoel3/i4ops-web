@@ -8,7 +8,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { Table } from "../components/ui/Table";
 import Button from "../components/ui/Button";
 import { toast } from "../toast";
-import { Check, Slash, Pencil, Trash2 } from "lucide-react";
+import { Check, UserX, Pencil, Trash2 } from "lucide-react";
 import type { User } from "../types";
 
 export default function Users() {
@@ -93,7 +93,7 @@ export default function Users() {
                   <Button
                     size="sm"
                     variant={u.active ? "danger" : "primary"}
-                    icon={u.active ? Slash : Check}
+                    icon={u.active ? UserX : Check}
                     title={u.active ? "Disable" : "Enable"}
                     onClick={() => setToggleUser(u)}
                   />
