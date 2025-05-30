@@ -1,118 +1,68 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "../axios";
-import AddUserModal from "../components/UserModal";
+import UserModal from "../components/UserModal";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { useRole } from "../hooks/useRole";
 import { useAuth } from "@clerk/clerk-react";
-import Skeleton from "../components/ui/Skeleton";
-import EmptyState from "../components/ui/EmptyState";
 import { Table } from "../components/ui/Table";
 import Button from "../components/ui/Button";
 import { toast } from "../toast";
-import ConfirmDialog from "../components/ConfirmDialog";
-import { Trash2 } from "lucide-react";
-
-interface User {
-  username: string;
-  email: string;
-  role: string;
-}
+import { Check, UserX, Pencil, Trash2 } from "lucide-react";
+import type { User } from "../types";
 
 export default function Users() {
   const [data, setData] = useState<User[] | null>(null);
-  const [open, setOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editUser, setEditUser] = useState<User | null>(null);
+  const [toggleUser, setToggleUser] = useState<User | null>(null);
+  const [deleteUser, setDeleteUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [toDelete, setToDelete] = useState<string | null>(null);
-  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+
   const role = useRole();
   const { isSignedIn } = useAuth();
 
   const load = () => {
     setIsLoading(true);
-    api.get("/users/")
+    api.get<User[]>("/users/")
       .then((r) => setData(r.data))
-      .catch((error) => {
-        console.error("Failed to fetch users:", error);
-        toast.error("Failed to load users.");
+      .catch(() => {
+        toast.error("Failed to load users");
         setData([]);
       })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      .finally(() => setIsLoading(false));
   };
 
   useEffect(() => {
-    if (!isSignedIn) return;
-    load();
+    if (isSignedIn) load();
   }, [isSignedIn]);
 
-  const handleAddUser = () => {
-    setUserToEdit(null);
-    setOpen(true);
-  };
-
-  const handleEditUser = (user: User) => {
-    setUserToEdit(user);
-    setOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpen(false);
-    setUserToEdit(null);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="flex justify-end"><Skeleton className="h-10 w-24" /></div>
-        <Table>
-          <thead>
-            <tr>
-              <th className="px-4 py-2"><Skeleton className="h-4 w-20" /></th>
-              <th className="px-4 py-2"><Skeleton className="h-4 w-32" /></th>
-              <th className="px-4 py-2"><Skeleton className="h-4 w-24" /></th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: 5 }).map((_, index) => (
-              <tr key={index}>
-                <td className="px-4 py-2"><Skeleton className="h-4 w-24" /></td>
-                <td className="px-4 py-2"><Skeleton className="h-4 w-32" /></td>
-                <td className="px-4 py-2"><Skeleton className="h-4 w-24" /></td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </div>
-    );
-  }
-
-  if (data && data.length === 0) {
-    return (
-      <EmptyState
-        msg="No users yet"
-        action={role !== "viewer" ? <Button onClick={handleAddUser}>+ Add User</Button> : undefined}
-      />
-    );
-  }
+  const statusBadge = (u: User) => (
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+      u.active
+        ? "bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-300"
+        : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+    }`}>
+      {u.active ? "Active" : "Disabled"}
+    </span>
+  );
 
   return (
-    <div className="space-y-6">
+    <>
       <motion.h1
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="text-2xl font-semibold"
+        className="text-2xl font-semibold mb-6"
       >
         Users
       </motion.h1>
 
-      <div className="flex justify-end">
-        {role !== "viewer" && (
-          <Button onClick={handleAddUser}>+ Add</Button>
-        )}
-      </div>
+      {role !== "viewer" && (
+        <div className="flex justify-end mb-4">
+          <Button onClick={() => setCreateOpen(true)}>+ Add</Button>
+        </div>
+      )}
 
       <Table>
         <thead className="bg-gray-50 dark:bg-gray-800/50">
@@ -120,7 +70,8 @@ export default function Users() {
             <th className="px-4 py-2">Username</th>
             <th className="px-4 py-2">Email</th>
             <th className="px-4 py-2">Role</th>
-            {role === "admin" && <th className="px-4 py-2 text-right w-12" />}
+            <th className="px-4 py-2">Status</th>
+            {role !== "viewer" && <th className="px-4 py-2" />}
           </tr>
         </thead>
         <tbody>
@@ -129,24 +80,30 @@ export default function Users() {
               <td className="px-4 py-2">{u.username}</td>
               <td className="px-4 py-2">{u.email}</td>
               <td className="px-4 py-2 capitalize">{u.role}</td>
+              <td className="px-4 py-2">{statusBadge(u)}</td>
               {role !== "viewer" && (
-                <td className="px-4 py-2 text-right flex justify-end space-x-2">
-                  {role === "admin" && (
-                    <button
-                      onClick={() => setToDelete(u.username)}
-                      className="p-1.5 text-red-500 hover:text-red-600 focus-visible:ring rounded"
-                      aria-label={`Delete ${u.username}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleEditUser(u)}
-                    className="p-1.5 text-brand-soft hover:text-brand focus-visible:ring rounded"
-                    aria-label={`Edit ${u.username}`}
-                  >
-                    ✏️
-                  </button>
+                <td className="px-4 py-2 flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    icon={Pencil}
+                    title="Edit"
+                    onClick={() => setEditUser(u)}
+                  />
+                  <Button
+                    size="sm"
+                    variant={u.active ? "danger" : "primary"}
+                    icon={u.active ? UserX : Check}
+                    title={u.active ? "Disable" : "Enable"}
+                    onClick={() => setToggleUser(u)}
+                  />
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    icon={Trash2}
+                    title="Delete"
+                    onClick={() => setDeleteUser(u)}
+                  />
                 </td>
               )}
             </tr>
@@ -154,25 +111,72 @@ export default function Users() {
         </tbody>
       </Table>
 
-      <AddUserModal isOpen={open} close={handleCloseModal} refresh={load} userToEdit={userToEdit} />
-
-      <ConfirmDialog
-        open={!!toDelete}
-        title="Delete user?"
-        message={`Are you sure you want to remove “${toDelete}”? This cannot be undone.`}
-        onCancel={() => setToDelete(null)}
-        onConfirm={async () => {
-          try {
-            await api.delete(`/users/${toDelete}`);
-            toast.success("User deleted");
-            load();
-          } catch (e) {
-            toast.error("Failed to delete user");
-          } finally {
-            setToDelete(null);
-          }
-        }}
+      {/* Create */}
+      <UserModal
+        mode="create"
+        isOpen={createOpen}
+        close={() => setCreateOpen(false)}
+        refresh={load}
       />
-    </div>
+
+      {/* Edit */}
+      {editUser && (
+        <UserModal
+          mode="edit"
+          isOpen={!!editUser}
+          initial={editUser}
+          close={() => setEditUser(null)}
+          refresh={load}
+        />
+      )}
+
+      {/* Toggle */}
+      {toggleUser && (
+        <ConfirmDialog
+          open={!!toggleUser}
+          title={`${toggleUser.active ? "Disable" : "Enable"} “${toggleUser.username}”`}
+          message={
+            toggleUser.active
+              ? "The user will no longer be able to SSH / Rsync into the VM."
+              : "The user will regain VM access."
+          }
+          confirmLabel={toggleUser.active ? "Disable" : "Enable"}
+          onCancel={() => setToggleUser(null)}
+          onConfirm={async () => {
+            try {
+              await api.patch(`/users/${toggleUser.username}`, {
+                active: !toggleUser.active,
+              });
+              toast.success(`${toggleUser.username} ${toggleUser.active ? "disabled" : "enabled"}`);
+              setToggleUser(null);
+              load();
+            } catch {
+              toast.error("Failed to update user");
+            }
+          }}
+        />
+      )}
+
+      {/* Delete */}
+      {deleteUser && (
+        <ConfirmDialog
+          open={!!deleteUser}
+          title={`Delete “${deleteUser.username}”‽`}
+          message="The user entry will be removed from project-users.yaml. This action is irreversible."
+          confirmLabel="Delete"
+          onCancel={() => setDeleteUser(null)}
+          onConfirm={async () => {
+            try {
+              await api.delete(`/users/${deleteUser.username}`);
+              toast.success(`${deleteUser.username} deleted`);
+              setDeleteUser(null);
+              load();
+            } catch {
+              toast.error("Failed to delete user");
+            }
+          }}
+        />
+      )}
+    </>
   );
 }
